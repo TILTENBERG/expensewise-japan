@@ -1,0 +1,30 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Next.js
+.next/
+out/
+
+# Environment Variables
+.env*.local
+.env
+
+# SQLite Database
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+prisma/dev.db
+prisma/dev.db-journal
+
+# Temporary files & executables
+*.exe
+cloudflared.exe
+.vercel/
+
+# OS Files
+.DS_Store
+Thumbs.db

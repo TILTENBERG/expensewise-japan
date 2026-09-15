@@ -1,0 +1,39 @@
+// Prisma schema file for Expense Tracker
+// Documentation: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Receipt {
+  id           String        @id @default(cuid())
+  date         DateTime      // Transaction date
+  merchant_name String       @default("Unknown Merchant")
+  total_amount Float         @default(0.0)
+  currency     String        @default("¥")
+  raw_image_path String?     // Optional data URI or file path
+  created_at   DateTime      @default(now())
+  updated_at   DateTime      @updatedAt
+
+  items        ExpenseItem[]
+}
+
+model ExpenseItem {
+  id         String   @id @default(cuid())
+  receipt_id String
+  name       String
+  price      Float    @default(0.0)
+  quantity   Float    @default(1.0)
+  category   String   @default("Other") // "Alcohol", "Drinks", "Food Ingredients", "Sweets", "Prepared Meals", "Household", "Other"
+  created_at DateTime @default(now())
+
+  receipt    Receipt  @relation(fields: [receipt_id], references: [id], onDelete: Cascade)
+
+  @@index([receipt_id])
+  @@index([category])
+}
