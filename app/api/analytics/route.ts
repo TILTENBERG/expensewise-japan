@@ -101,10 +101,11 @@ export async function GET(req: NextRequest) {
     };
 
     return NextResponse.json(analytics);
-  } catch (error) {
-    console.error("Failed to compute analytics:", error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("Failed to compute analytics:", err);
     return NextResponse.json(
-      { error: "Failed to compute analytics" },
+      { error: "Failed to compute analytics", details: err?.message || String(error) },
       { status: 500 }
     );
   }

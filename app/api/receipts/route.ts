@@ -46,10 +46,11 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json(receipts);
-  } catch (error) {
-    console.error("Failed to fetch receipts:", error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("Failed to fetch receipts:", err);
     return NextResponse.json(
-      { error: "Failed to fetch receipts." },
+      { error: "Failed to fetch receipts.", details: err?.message || String(error) },
       { status: 500 }
     );
   }
