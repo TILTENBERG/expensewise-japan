@@ -254,16 +254,6 @@ export default function HomePage() {
             onSelectCategory={setSelectedCategory}
             categoryTotals={categoryTotals}
           />
-
-          {receipts.length === 0 && !isLoading && (
-            <button
-              onClick={handleSeedDemoData}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all self-start sm:self-auto"
-            >
-              <Database className="h-3.5 w-3.5" />
-              <span>Load Demo Receipts for {format(currentDate, "MMMM")}</span>
-            </button>
-          )}
         </div>
 
         {/* Interactive Calendar Grid */}
