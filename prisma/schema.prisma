@@ -6,21 +6,21 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Receipt {
-  id           String        @id @default(cuid())
-  date         DateTime      // Transaction date
-  merchant_name String       @default("Unknown Merchant")
-  total_amount Float         @default(0.0)
-  currency     String        @default("¥")
-  raw_image_path String?     // Optional data URI or file path
-  created_at   DateTime      @default(now())
-  updated_at   DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  date           DateTime      // Transaction date
+  merchant_name  String        @default("Unknown Merchant")
+  total_amount   Float         @default(0.0)
+  currency       String        @default("¥")
+  raw_image_path String?       // Optional data URI or file path
+  created_at     DateTime      @default(now())
+  updated_at     DateTime      @updatedAt
 
-  items        ExpenseItem[]
+  items          ExpenseItem[]
 }
 
 model ExpenseItem {
@@ -29,7 +29,7 @@ model ExpenseItem {
   name       String
   price      Float    @default(0.0)
   quantity   Float    @default(1.0)
-  category   String   @default("Other") // "Alcohol", "Drinks", "Food Ingredients", "Sweets", "Prepared Meals", "Household", "Other"
+  category   String   @default("Other")
   created_at DateTime @default(now())
 
   receipt    Receipt  @relation(fields: [receipt_id], references: [id], onDelete: Cascade)
