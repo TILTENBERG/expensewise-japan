@@ -269,7 +269,7 @@ export function ReceiptScannerModal({
               <AlertTriangle className="h-4 w-4 shrink-0 text-rose-500 dark:text-rose-400 mt-0.5" />
               <div className="flex-1">
                 <p className="font-semibold text-rose-700 dark:text-rose-200">{errorMsg}</p>
-                {errorMsg.includes("API key") && (
+                {/api key|invalid|permission|not found|404|quota|gemini/i.test(errorMsg) && (
                   <button
                     onClick={onOpenApiKeyModal}
                     className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition-colors"

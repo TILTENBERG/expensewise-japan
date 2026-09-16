@@ -54,7 +54,7 @@ export function ApiKeyModal({
                 Google AI Studio API Key
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Powers multimodal Gemini 2.5 receipt OCR
+                Powers Gemini Flash multimodal receipt OCR
               </p>
             </div>
           </div>

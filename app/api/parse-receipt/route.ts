@@ -5,6 +5,53 @@ import { ParsedReceiptResponse } from "@/lib/types";
 
 export const maxDuration = 60; // Allow sufficient time for multimodal OCR
 
+const FALLBACK_MODELS = [
+  "gemini-3.8-flash",
+  "gemini-3.7-flash",
+  "gemini-3.6-flash",
+  "gemini-3.5-flash-lite",
+  "gemini-3.1-flash-lite",
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-1.5-flash",
+];
+
+async function resolveCandidateModels(ai: GoogleGenAI): Promise<string[]> {
+  try {
+    const pager = await ai.models.list();
+    const discovered: string[] = [];
+    for await (const m of pager) {
+      if (!m.name) continue;
+      const cleanName = m.name.replace(/^models\//, "");
+      if (
+        !m.supportedActions ||
+        m.supportedActions.includes("generateContent")
+      ) {
+        discovered.push(cleanName);
+      }
+    }
+
+    if (discovered.length > 0) {
+      // Prioritize flash models (fast & cost-effective for OCR), newest first
+      const flashModels = discovered
+        .filter((n) => /flash/i.test(n))
+        .sort((a, b) => b.localeCompare(a));
+      const otherModels = discovered
+        .filter((n) => !/flash/i.test(n) && /(gemini|pro)/i.test(n))
+        .sort((a, b) => b.localeCompare(a));
+
+      const combined = [...flashModels, ...otherModels];
+      if (combined.length > 0) {
+        return combined;
+      }
+    }
+  } catch (err: unknown) {
+    console.warn("Dynamic model discovery unavailable, falling back to static list:", (err as Error)?.message);
+  }
+
+  return FALLBACK_MODELS;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -38,13 +85,8 @@ export async function POST(req: NextRequest) {
 
     const ai = new GoogleGenAI({ apiKey });
 
-    // Try models in order: gemini-2.5-flash, gemini-2.0-flash, gemini-1.5-flash
-    const candidateModels = [
-      "gemini-2.5-flash",
-      "gemini-2.5-flash-lite",
-      "gemini-2.0-flash",
-      "gemini-1.5-flash",
-    ];
+    // Dynamic model discovery: query active models for this API key, or use 2026 flagship fallbacks
+    const candidateModels = await resolveCandidateModels(ai);
 
     const prompt = `You are an expert OCR receipt parsing and expense tracking assistant specializing in receipts, including Japanese receipts (convenience stores, supermarkets, restaurants).
 Analyze this receipt image thoroughly:
@@ -68,7 +110,7 @@ Currency is Japanese Yen (¥ / JPY).
 Return valid JSON conforming to the requested schema.`;
 
     let rawText = "";
-    let lastError: Error | null = null;
+    const attemptErrors: Array<{ model: string; error: string }> = [];
 
     for (const modelName of candidateModels) {
       try {
@@ -127,15 +169,33 @@ Return valid JSON conforming to the requested schema.`;
           break;
         }
       } catch (err: unknown) {
-        lastError = err as Error;
-        console.warn(`Model ${modelName} failed, trying fallback...`, (err as Error).message);
+        const errMsg = err instanceof Error ? err.message : String(err);
+        attemptErrors.push({ model: modelName, error: errMsg });
+        console.warn(`Model ${modelName} failed:`, errMsg);
       }
     }
 
     if (!rawText) {
-      throw new Error(
-        lastError?.message || "Failed to parse receipt image with Gemini AI."
-      );
+      const allErrorsText = attemptErrors.map((e) => e.error).join(" ");
+      let userFriendlyMessage = "Failed to parse receipt with Google Gemini AI.";
+
+      if (/API_KEY_INVALID|API key not valid/i.test(allErrorsText)) {
+        userFriendlyMessage =
+          "Invalid Gemini API key. Please check or re-enter your API key at https://aistudio.google.com/app/apikey.";
+      } else if (/RESOURCE_EXHAUSTED|rate limit|quota/i.test(allErrorsText)) {
+        userFriendlyMessage =
+          "Gemini API quota or rate limit reached. Please wait a moment or check your Google AI Studio quota.";
+      } else if (/PERMISSION_DENIED/i.test(allErrorsText)) {
+        userFriendlyMessage =
+          "Permission denied. Please ensure the Generative Language API is enabled for your project in Google Cloud / AI Studio.";
+      } else if (/NOT_FOUND|not found/i.test(allErrorsText)) {
+        userFriendlyMessage =
+          `The requested Gemini models are not available for your API key. Please verify your Google AI Studio project settings or generate a new key at https://aistudio.google.com/app/apikey.`;
+      } else if (attemptErrors.length > 0) {
+        userFriendlyMessage = attemptErrors[attemptErrors.length - 1].error;
+      }
+
+      throw new Error(userFriendlyMessage);
     }
 
     // Clean markdown code fence if present
