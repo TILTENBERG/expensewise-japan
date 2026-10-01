@@ -12,6 +12,7 @@ import {
   Receipt as ReceiptIcon,
   Store,
   Calendar,
+  ChevronLeft,
 } from "lucide-react";
 
 interface DayDetailDrawerProps {
@@ -32,6 +33,15 @@ export function DayDetailDrawer({
   onOpenScanner,
 }: DayDetailDrawerProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Close on Escape key
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   if (!selectedDate) return null;
 
@@ -75,25 +85,34 @@ export function DayDetailDrawer({
 
       {/* Slide-over Drawer */}
       <div className="relative z-10 w-full max-w-xl h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-white/10 shadow-2xl flex flex-col overflow-hidden animate-slideLeft transition-colors">
-        {/* Header */}
-        <div className="p-5 border-b border-slate-200 dark:border-white/10 bg-slate-50/90 dark:bg-slate-950/80 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400">
-              <Calendar className="h-5 w-5" />
+        {/* Header with iOS safe area and Back button */}
+        <div className="px-4 py-3.5 border-b border-slate-200 dark:border-white/10 bg-slate-50/95 dark:bg-slate-950/90 backdrop-blur-md safe-area-top flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={onClose}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-200/80 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold transition-all active:scale-95 shadow-sm"
+              title="Back to Calendar"
+            >
+              <ChevronLeft className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              <span>Back</span>
+            </button>
+            <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 hidden sm:flex">
+              <Calendar className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-                {format(selectedDate, "EEEE, MMMM d, yyyy")}
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
+                {format(selectedDate, "EEE, MMM d, yyyy")}
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 {dayReceipts.length} receipt{dayReceipts.length !== 1 ? "s" : ""}{" "}
-                • {totalItemsCount} line items
+                • {totalItemsCount} items
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors"
+            className="p-2 rounded-xl bg-slate-200/80 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95 shadow-sm"
+            title="Close details (Esc)"
           >
             <X className="h-5 w-5" />
           </button>
@@ -260,6 +279,17 @@ export function DayDetailDrawer({
               </div>
             ))
           )}
+        </div>
+
+        {/* Sticky Bottom Drawer Footer with Back Button */}
+        <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-white/10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md safe-area-bottom">
+          <button
+            onClick={onClose}
+            className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-bold text-xs transition-all flex items-center justify-center gap-2 active:scale-98 shadow-sm"
+          >
+            <ChevronLeft className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            <span>Back to Calendar</span>
+          </button>
         </div>
       </div>
     </div>
