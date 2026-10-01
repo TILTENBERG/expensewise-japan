@@ -27,8 +27,8 @@ interface NavbarProps {
   onOpenManualEntry: () => void;
   onOpenApiKeyModal: () => void;
   onSeedData: () => void;
-  onToggleAnalytics: () => void;
-  showAnalytics: boolean;
+  activeTab: "calendar" | "analytics";
+  onSelectTab: (tab: "calendar" | "analytics") => void;
   totalSpentMonth: number;
   monthlyBudget: number;
   hasCustomKey: boolean;
@@ -43,8 +43,8 @@ export function Navbar({
   onOpenManualEntry,
   onOpenApiKeyModal,
   onSeedData,
-  onToggleAnalytics,
-  showAnalytics,
+  activeTab,
+  onSelectTab,
   totalSpentMonth,
   monthlyBudget,
   hasCustomKey,
@@ -141,19 +141,31 @@ export function Navbar({
             )}
           </button>
 
-          {/* Toggle Analytics */}
-          <button
-            onClick={onToggleAnalytics}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-              showAnalytics
-                ? "bg-indigo-50 dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30"
-                : "bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-850"
-            }`}
-            title="Toggle Analytics Overview"
-          >
-            <BarChart3 className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-            <span>Analytics</span>
-          </button>
+          {/* View Tab Switcher on Desktop */}
+          <div className="flex items-center bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-xl text-xs">
+            <button
+              onClick={() => onSelectTab("calendar")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
+                activeTab === "calendar"
+                  ? "bg-white dark:bg-slate-800 text-indigo-600 dark:text-white shadow-sm"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <CalendarIcon className="h-3.5 w-3.5" />
+              <span>Calendar</span>
+            </button>
+            <button
+              onClick={() => onSelectTab("analytics")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
+                activeTab === "analytics"
+                  ? "bg-white dark:bg-slate-800 text-indigo-600 dark:text-white shadow-sm"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <BarChart3 className="h-3.5 w-3.5" />
+              <span>Analytics</span>
+            </button>
+          </div>
 
           {/* API Key Modal Button */}
           <button

@@ -21,16 +21,11 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [monthlyBudget, setMonthlyBudget] = useState<number>(100000);
-  const [showAnalytics, setShowAnalytics] = useState<boolean>(true);
+  const [activeTab, setActiveTab] = useState<"calendar" | "analytics">("calendar");
 
-  // Android PWA install prompt & calendar ref
+  // Android PWA install prompt
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const calendarRef = React.useRef<HTMLDivElement | null>(null);
-
-  const handleScrollToCalendar = () => {
-    calendarRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
 
   // Modals state
   const [showScanner, setShowScanner] = useState(false);
@@ -226,8 +221,8 @@ export default function HomePage() {
         }}
         onOpenApiKeyModal={() => setShowApiKeyModal(true)}
         onSeedData={handleSeedDemoData}
-        onToggleAnalytics={() => setShowAnalytics(!showAnalytics)}
-        showAnalytics={showAnalytics}
+        activeTab={activeTab}
+        onSelectTab={(tab) => setActiveTab(tab)}
         totalSpentMonth={totalSpentMonth}
         monthlyBudget={monthlyBudget}
         hasCustomKey={Boolean(apiKey)}
@@ -282,39 +277,46 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Optional Collapsible Analytics Section */}
-        {showAnalytics && (
-          <AnalyticsSummary
-            analytics={analytics}
-            monthlyBudget={monthlyBudget}
-            onUpdateBudget={handleUpdateBudget}
-            onSelectCategory={(cat) => setSelectedCategory(cat)}
-            selectedCategory={selectedCategory}
-          />
+        {/* Analytics View */}
+        {activeTab === "analytics" && (
+          <div className="space-y-6 animate-fadeIn">
+            <AnalyticsSummary
+              analytics={analytics}
+              monthlyBudget={monthlyBudget}
+              onUpdateBudget={handleUpdateBudget}
+              onSelectCategory={(cat) => setSelectedCategory(cat)}
+              selectedCategory={selectedCategory}
+            />
+          </div>
         )}
 
-        {/* Category Filter Pills */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <CategoryFilter
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-            categoryTotals={categoryTotals}
-          />
-        </div>
+        {/* Calendar View */}
+        {activeTab === "calendar" && (
+          <div className="space-y-6 animate-fadeIn">
+            {/* Category Filter Pills */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <CategoryFilter
+                selectedCategory={selectedCategory}
+                onSelectCategory={setSelectedCategory}
+                categoryTotals={categoryTotals}
+              />
+            </div>
 
-        {/* Interactive Calendar Grid */}
-        <div ref={calendarRef}>
-          <CalendarView
-            currentDate={currentDate}
-            receipts={receipts}
-            selectedCategory={selectedCategory}
-            onSelectDate={(date) => setSelectedDate(date)}
-            onQuickAdd={(date) => {
-              setManualDate(date);
-              setShowManualModal(true);
-            }}
-          />
-        </div>
+            {/* Interactive Calendar Grid */}
+            <div>
+              <CalendarView
+                currentDate={currentDate}
+                receipts={receipts}
+                selectedCategory={selectedCategory}
+                onSelectDate={(date) => setSelectedDate(date)}
+                onQuickAdd={(date) => {
+                  setManualDate(date);
+                  setShowManualModal(true);
+                }}
+              />
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Slide-Over Drawer for Selected Day Details */}
@@ -370,8 +372,13 @@ export default function HomePage() {
         onSaveApiKey={handleSaveApiKey}
       />
 
-      {/* Mobile Android Thumb Navigation Bar */}
+      {/* Mobile Thumb Navigation Bar */}
       <BottomNav
+        activeTab={activeTab}
+        onSelectTab={(tab) => {
+          setActiveTab(tab);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
         onOpenScanner={() => {
           setSelectedDate(null);
           setShowScanner(true);
@@ -380,9 +387,6 @@ export default function HomePage() {
           setManualDate(null);
           setShowManualModal(true);
         }}
-        onToggleAnalytics={() => setShowAnalytics((prev) => !prev)}
-        showAnalytics={showAnalytics}
-        onScrollToCalendar={handleScrollToCalendar}
       />
     </div>
   );
