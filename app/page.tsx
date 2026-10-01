@@ -42,6 +42,7 @@ export default function HomePage() {
   // Loading and alerts
   const [isLoading, setIsLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showIOSInstallBanner, setShowIOSInstallBanner] = useState(false);
 
   // Load stored preferences (budget & API key)
   useEffect(() => {
@@ -54,6 +55,18 @@ export default function HomePage() {
         const parsed = parseFloat(storedBudget);
         if (!isNaN(parsed) && parsed > 0) setMonthlyBudget(parsed);
       }
+
+      // Check if user is on iOS Safari and not yet in standalone PWA mode
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const isStandalone =
+        ("standalone" in window.navigator &&
+          Boolean((window.navigator as unknown as { standalone: boolean }).standalone)) ||
+        window.matchMedia("(display-mode: standalone)").matches;
+      const isDismissed = sessionStorage.getItem("dismissed_ios_guide");
+
+      if (isIOS && !isStandalone && !isDismissed) {
+        setShowIOSInstallBanner(true);
+      }
     }
 
     const handleBeforeInstall = (e: Event) => {
@@ -63,6 +76,13 @@ export default function HomePage() {
     window.addEventListener("beforeinstallprompt", handleBeforeInstall);
     return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
   }, []);
+
+  const handleDismissIOSBanner = () => {
+    setShowIOSInstallBanner(false);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("dismissed_ios_guide", "true");
+    }
+  };
 
   const handleInstallApp = async () => {
     if (!deferredPrompt) return;
@@ -214,7 +234,33 @@ export default function HomePage() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 pt-6 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 pt-6 pb-28 md:pb-8 space-y-6">
+        {/* iOS iPhone Install Guide Banner */}
+        {showIOSInstallBanner && (
+          <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-3.5 sm:p-4 rounded-2xl shadow-xl flex items-start justify-between gap-3 border border-white/10 animate-fadeIn">
+            <div className="flex items-start gap-3">
+              <div className="p-2 sm:p-2.5 bg-white/20 rounded-xl shrink-0 mt-0.5">
+                <Smartphone className="h-5 w-5 text-white" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-xs font-bold">Install on your new iPhone</p>
+                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-white/20 font-medium">iOS Standalone</span>
+                </div>
+                <p className="text-[11px] text-white/90 leading-relaxed">
+                  Tap the Safari <strong>Share</strong> button <span className="inline-block px-1.5 py-0.5 rounded bg-white/25 text-[10px] font-mono font-bold">⎋</span> at the bottom of your screen, then tap <span className="inline-block px-1.5 py-0.5 rounded bg-white/25 text-[10px] font-mono font-bold">+ Add to Home Screen</span> for the native app experience with zero browser bars!
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleDismissIOSBanner}
+              className="px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white text-[11px] font-medium transition-colors shrink-0"
+            >
+              Got it
+            </button>
+          </div>
+        )}
+
         {/* Android PWA Install Banner */}
         {deferredPrompt && (
           <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-3.5 rounded-2xl shadow-lg flex items-center justify-between gap-3">

@@ -336,7 +336,7 @@ export function ReceiptScannerModal({
 
                   <div className="mt-6 flex items-center gap-3">
                     <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
-                      Or snap with Android phone camera:
+                      Or snap with phone camera:
                     </span>
                     <button
                       type="button"

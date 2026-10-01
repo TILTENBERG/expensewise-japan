@@ -74,4 +74,18 @@ body {
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--card-border);
   }
+
+  /* iOS Dynamic Island, Notch & Home Indicator Safe Area Padding */
+  .safe-area-top {
+    padding-top: max(0.625rem, env(safe-area-inset-top, 0px));
+  }
+
+  .safe-area-bottom {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Optimize touch responsiveness and remove unwanted tap gray box on iOS */
+* {
+  -webkit-tap-highlight-color: transparent;
 }

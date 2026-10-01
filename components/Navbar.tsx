@@ -57,7 +57,7 @@ export function Navbar({
   );
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md px-3 sm:px-6 py-2.5 transition-colors">
+    <header className="sticky top-0 z-30 border-b border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md px-3 sm:px-6 safe-area-top py-2.5 transition-colors">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         {/* Left: Brand Logo */}
         <div className="flex items-center gap-2 shrink-0">
